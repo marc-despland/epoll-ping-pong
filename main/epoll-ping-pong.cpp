@@ -1,7 +1,8 @@
 #include <iostream>
 #include "options.h"
 #include "log.h"
-
+#include "fifo.h"
+#include "pingpongserver.h"
 
 
 int main(int argc, char **argv) {
