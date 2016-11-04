@@ -14,17 +14,30 @@ int main(int argc, char **argv) {
 		options.add('p', "port", "Port to listen to", true, true);
 		options.add('c', "count", "Number of connection to create", true, true);
 		options.add('f', "from", "The source IP to use", true, false);
-	} catch(ExistingOptionException &e ) {
+		options.add('n', "nb", "The number of client (first start with 'from' ip... and increase)", true, false);
+		} catch(ExistingOptionException &e ) {
 	}
 	try {
 		options.parse(argc, argv);
 		if (options.get('d')->isAssign()) Log::logger->setLevel(DEBUG);
-		PingPongClient * client=new PingPongClient(options.get("host")->asChars(), options.get("port")->asInt(),options.get("count")->asInt());
-		if (options.get('f')->isAssign()) {
-			client->setSource(options.get("from")->asChars());
+		if (options.get('n')->isAssign()) {
+			int count=options.get("count")->asInt();
+			PingPongClient client[]=new PingPongClient[count];
+			for (int i=0; i<n;i++) {
+				client[i]=new PingPongClient(options.get("host")->asChars(), options.get("port")->asInt(),options.get("count")->asInt());
+				client[i]->setSource(options.get("from")->asChars());
+				client[i]->createConnections();
+				
+
+			}
+		} else {
+			PingPongClient * client=new PingPongClient(options.get("host")->asChars(), options.get("port")->asInt(),options.get("count")->asInt());
+			if (options.get('f')->isAssign()) {
+				client->setSource(options.get("from")->asChars());
+			}
+			client->createConnections();
+			client->run();
 		}
-		client->createConnections();
-		client->run();
 		
 	} catch (OptionsStopException &e) {
 	} catch (UnknownOptionException &e) {
