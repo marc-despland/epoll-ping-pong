@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
 		options.parse(argc, argv);
 		if (options.get('d')->isAssign()) Log::logger->setLevel(DEBUG);
 		if (options.get('n')->isAssign()) {
-			int n=options.get("count")->asInt();
+			int n=options.get("nb")->asInt();
 			PingPongClient ** client=new PingPongClient*[n];
 			for (int i=0; i<n;i++) {
 				client[i]=new PingPongClient(options.get("host")->asChars(), options.get("port")->asInt(),options.get("count")->asInt());
