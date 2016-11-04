@@ -1,11 +1,11 @@
 SHELL = /bin/sh
 CC    = g++
 
-CPPFLAGS       = -g -Wall -Iinclude  -std=c++11
+CPPFLAGS       = -g -Wall -Iinclude  -std=c++11 
 OLDFLAGS	= -std=c++11
 CFLAGS       = $(CPPFLAGS) 
-LDLIBS		 = -lutil
-TARGET  = epoll-ping-pong
+LDLIBS		 = -lutil -pthread
+TARGET  = epoll-ping-pong epoll-client
 SOURCES = $(shell echo src/*.cpp)
 HEADERS = $(shell echo include/*.h)
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -14,7 +14,12 @@ MAINOBJ	= $(MAIN:.cpp=.o)
 DEBUGFLAGS = -g
  
 all: $(TARGET)
- 
+
+build:
+	- cp epoll-ping-pong dist/server
+	- docker build -t epoll/server dist/server
+	- cp epoll-client dist/client
+	- docker build -t epoll/client dist/client
 
 clean:
 	-echo "clean"

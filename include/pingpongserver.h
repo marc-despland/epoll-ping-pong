@@ -3,9 +3,22 @@
 
 #include <string>
 using namespace std;
-#include "connection.h"
 #include "runnable.h"
+#include "connectionpool.h"
 
+
+class MakeSocketNonBlockingException: public exception {
+	public:
+		MakeSocketNonBlockingException(string message):exception() {
+			this->message=message;
+		}
+		~MakeSocketNonBlockingException() throw (){};
+		friend std::ostream & operator<<(std::ostream &os, const MakeSocketNonBlockingException& e) {
+			return os << e.message;
+		}
+	protected:
+		string message;
+};
 
 class ConnectionListenException: public exception {
 	public:
@@ -19,8 +32,7 @@ class ConnectionListenException: public exception {
 	protected:
 		string message;
 };
-
-
+ 
 class ConnectionAcceptException: public exception {
 	public:
 		ConnectionAcceptException(string message):exception() {
@@ -51,16 +63,19 @@ class CantConnectException: public exception {
 class PingPongServer:Runnable {
 
 public:
-	PingPongServer();
-	void listen(unsigned int size) throw (ConnectionListenException);
-	Connection * accept() throw (ConnectionAcceptException);
+	PingPongServer(int port, unsigned int size);
+	void listen() throw (ConnectionListenException);
+	void accept() throw (MakeSocketNonBlockingException);
 	void run();
 
 protected:
-	int port;
+	static void makeSocketNonBlocking(int socket) throw(MakeSocketNonBlockingException);
+
 	int socketfd;
-	Host * host;
-	unsigned int size;		
+	int port;
+	unsigned int size;	
+	ConnectionPool * pool;
+	unsigned int count;	
 
 };
 

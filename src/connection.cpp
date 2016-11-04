@@ -6,7 +6,9 @@ Connection::Connection(int socket,Host * host){
 	this->host=host;
 } 
 
-
+int Connection::socket() {
+	return this->socketfd;
+}
 
 Host * Connection::endpoint() {
 	return this->host;

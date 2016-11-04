@@ -6,7 +6,7 @@ class Connection {
 public:
 	Connection(int socketfd, Host * host);
 	Host * endpoint();
-
+	int socket();
 	friend std::ostream & operator<<(std::ostream &os, const Connection * c);
 
 private:
