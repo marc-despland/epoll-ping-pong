@@ -26,6 +26,25 @@ PingPongClient::PingPongClient(string host, int port, int size)throw(ConnectionP
 	this->hasSource=false;
 }
 
+
+void PingPongClient::setSourceRange(string ip, int i) {
+	long hostaddress;
+	struct hostent *serverent;
+	bzero(&(this->source),sizeof(struct sockaddr_in));
+	hostaddress = inet_addr(ip.c_str());
+	hostaddress+=i;
+	if ( (long)hostaddress != (long)4294967295) {
+		Log::logger->log("CNXTCP",DEBUG) << host.c_str() << " is an IP address : "<< hostaddress <<endl;
+		bcopy(&hostaddress,&(this->source).sin_addr,sizeof(hostaddress));
+		this->source.sin_port = 0;
+		this->source.sin_family = AF_INET;
+		this->hasSource=true;
+	} else {
+		Log::logger->log("CNXTCP",DEBUG) << host.c_str() << " is probably an host name" <<endl;
+	}
+}
+
+
 void PingPongClient::setSource(string host) {
 	long hostaddress;
 	struct hostent *serverent;

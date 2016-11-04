@@ -59,6 +59,7 @@ public:
 	void createConnections();
 	void run();
 	void setSource(string host);
+	void setSourceRange(string ip, int i);
 protected:
 	static void makeSocketNonBlocking(int socket) throw(MakeSocketNonBlockingException);
 	string host;
