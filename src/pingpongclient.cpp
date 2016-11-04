@@ -32,7 +32,7 @@ void PingPongClient::setSourceRange(string ip, int i) {
 	struct hostent *serverent;
 	bzero(&(this->source),sizeof(struct sockaddr_in));
 	hostaddress = inet_addr(ip.c_str());
-	hostaddress+=i;
+	hostaddress+=i*256*256*256;
 	if ( (long)hostaddress != (long)4294967295) {
 		Log::logger->log("CNXTCP",DEBUG) << host.c_str() << " is an IP address : "<< hostaddress <<endl;
 		bcopy(&hostaddress,&(this->source).sin_addr,sizeof(hostaddress));
