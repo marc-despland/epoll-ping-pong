@@ -21,15 +21,14 @@ int main(int argc, char **argv) {
 		options.parse(argc, argv);
 		if (options.get('d')->isAssign()) Log::logger->setLevel(DEBUG);
 		if (options.get('n')->isAssign()) {
-			int count=options.get("count")->asInt();
-			PingPongClient client[]=new PingPongClient[count];
+			int n=options.get("count")->asInt();
+			PingPongClient ** client=new PingPongClient*[n];
 			for (int i=0; i<n;i++) {
 				client[i]=new PingPongClient(options.get("host")->asChars(), options.get("port")->asInt(),options.get("count")->asInt());
-				client[i]->setSource(options.get("from")->asChars());
+				client[i]->setSourceRange(options.get("from")->asChars(),i);
 				client[i]->createConnections();
-				
-
 			}
+			client[0]->run();
 		} else {
 			PingPongClient * client=new PingPongClient(options.get("host")->asChars(), options.get("port")->asInt(),options.get("count")->asInt());
 			if (options.get('f')->isAssign()) {
