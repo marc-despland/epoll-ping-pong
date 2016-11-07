@@ -97,6 +97,7 @@ void PingPongServer::accept() throw(MakeSocketNonBlockingException) {
 void PingPongServer::run() {
 	this->listen();
 	this->Runnable::start();
+	try {
 	while (this->Runnable::running()) {
 		vector<int> * ready=this->pool->poll();
 		for (unsigned int i=0; i<ready->size(); i++ ) {
@@ -118,6 +119,9 @@ void PingPongServer::run() {
                 }
 			}
 		}
+	}
+	} catch(ConnectionPoolException &e) {
+		Log::logger->log("CNXTCP", ERROR) << "A connection pool error occurs " <<endl;
 	}
 
 }

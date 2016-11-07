@@ -28,6 +28,7 @@ void ConnectionPool::add(int socket) throw (ConnectionPoolException){
   		if (errno==ENOMEM) {
   			Log::logger->log("ConnectionPool", ERROR) << "No more memories in kernel" <<endl;
   		}
+  		Log::logger->log("ConnectionPool", ERROR) << "Epoll failed to add socket "<< errno <<endl;
   		throw ConnectionPoolException("Epoll ctl failed");
     }
 
