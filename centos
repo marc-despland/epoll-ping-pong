@@ -5,3 +5,8 @@ git clone https://github.com/marc-despland/epoll-ping-pong.git
 cd epoll-ping-pong/
 
 for i in {2..102} ; do ifconfig ens192:$i 172.16.10.$i up ; done
+
+
+ ulimit -n 1000000
+./distributed-client -c 25000 -s 172.16.10.1 -p 666 -f 172.16.10.2 -w 10 --nbfrom 40
+./epoll-ping-pong -p 666
