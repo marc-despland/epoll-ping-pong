@@ -17,6 +17,7 @@ PingPongServer::PingPongServer(int port, unsigned int size):Runnable() {
 	this->port=port;
 	this->size=size;
 	this->count=0;
+	this->first=true;
 }
 
 
@@ -77,6 +78,15 @@ void PingPongServer::accept() throw(MakeSocketNonBlockingException) {
 		this->count++;
 		Log::logger->log("CNXTCP", NOTICE) << "New Connection " << this->count <<endl;
 		if (clientfd>=0) {
+			if (this->first) {
+				char first[4];
+				first[0]='b';
+				first[1]='i';
+				first[2]='p';
+				first[3]=0;
+				write(clientfd, first, 4);
+				this->first=false;
+			}
 			PingPongServer::makeSocketNonBlocking(clientfd);
 			this->pool->add(clientfd);
 		}

@@ -6,19 +6,18 @@
 #include <condition_variable>
 using namespace std;
 
-template <typename T> 
 class Fifo {
 public:
 	Fifo();
-	void add(T object);
-	T next();
+	void add(int socket);
+	int next();
 	int size();
 
 private:
 	std::mutex read;
 	std::mutex write;
 	std::condition_variable ready;
-	std::queue<T> fifo;
+	std::queue<int> fifo;
 
 };
 

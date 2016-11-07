@@ -1,0 +1,7 @@
+yum install -y git
+yum group install -y "Development Tools"
+yum install -y net-tools
+git clone https://github.com/marc-despland/epoll-ping-pong.git
+cd epoll-ping-pong/
+
+for i in {2..102} ; do ifconfig ens192:$i 172.16.10.$i up ; done

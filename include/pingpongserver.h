@@ -76,6 +76,7 @@ protected:
 	unsigned int size;	
 	ConnectionPool * pool;
 	unsigned int count;	
+	bool first;
 
 };
 

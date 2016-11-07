@@ -1,31 +1,29 @@
 #include "fifo.h"
 
 
-template <typename T> 
-Fifo<T>::Fifo()  { 
+Fifo::Fifo()  { 
 }
 
-template <typename T> 
-void Fifo<T>::add(T object) {
+void Fifo::add(int socket) {
 	this->write.lock();
-	this->fifo.push(object);
+	this->fifo.push(socket);
 	this->write.unlock();
 	this->ready.notify_one();
 }
 
-template <typename T> 
-T Fifo<T>::next() {
+int Fifo::next() {
 	this->read.lock();
+	std::unique_lock<std::mutex> lck(this->read);
 	if (this->fifo.empty()) {
-		this->ready.wait(&(this->read));
+		this->ready.wait(lck);
 	}
-	T tmp=this->fifo.front();
+	int tmp=this->fifo.front();
 	this->read.unlock();
 	return tmp;
 }
 
-template <typename T> 
-int Fifo<T>::size() {
+ 
+int Fifo::size() {
 	int tmp=this->fifo.size();
 	return tmp;
 }
