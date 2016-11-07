@@ -2,3 +2,4 @@
 core.*
 epoll-ping-pong
 epoll-client
+distributed-client

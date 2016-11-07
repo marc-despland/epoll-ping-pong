@@ -22,9 +22,6 @@ int main(int argc, char **argv) {
 	try {
 		options.parse(argc, argv);
 		if (options.get('d')->isAssign()) Log::logger->setLevel(DEBUG);
-		if (options.get('n')->isAssign()) {
-			int n=options.get("nb")->asInt();
-		}
 		std::string from="0.0.0.0";
 		int nbfrom=1;
 		if (options.get("from")->isAssign()) {
