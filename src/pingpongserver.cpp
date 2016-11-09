@@ -70,58 +70,58 @@ void PingPongServer::accept() throw(MakeSocketNonBlockingException) {
 	socklen_t clientsize;
 	bzero(&client,sizeof(client));
 	clientsize=sizeof(client);
-	do {
-		bzero(&client,sizeof(client));
-		clientsize=sizeof(client);
-		clientfd = ::accept(this->socketfd,(struct sockaddr *)&client,&clientsize);
-		Log::logger->log("CNXTCP",DEBUG) << "Accept socket: " << clientfd << " error : "<< strerror(errno) <<endl;
-		this->count++;
-		Log::logger->log("CNXTCP", NOTICE) << "New Connection " << this->count <<endl;
-		if (clientfd>=0) {
-			if (this->first) {
-				char first[4];
-				first[0]='b';
-				first[1]='i';
-				first[2]='p';
-				first[3]=0;
-				write(clientfd, first, 4);
-				this->first=false;
+	try {
+		do {
+			bzero(&client,sizeof(client));
+			clientsize=sizeof(client);
+			clientfd = ::accept(this->socketfd,(struct sockaddr *)&client,&clientsize);
+			Log::logger->log("CNXTCP",DEBUG) << "Accept socket: " << clientfd << " error : "<< strerror(errno) <<endl;
+			if (clientfd>=0) {
+				if (this->first) {
+					char first[4];
+					first[0]='b';
+					first[1]='i';
+					first[2]='p';
+					first[3]=0;
+					write(clientfd, first, 4);
+					this->first=false;
+				}
+				PingPongServer::makeSocketNonBlocking(clientfd);
+				this->pool->add(clientfd);
+				this->count++;
+				Log::logger->log("CNXTCP", NOTICE) << "New Connection " << this->count <<endl;
 			}
-			PingPongServer::makeSocketNonBlocking(clientfd);
-			this->pool->add(clientfd);
-		}
-	} while ((clientfd<0) && (errno==EINTR));
+		} while ((clientfd<0) && (errno==EINTR));
+	} catch(ConnectionPoolException &e) {
+		Log::logger->log("CNXTCP", ERROR) << "A connection pool error occurs " <<endl;
+	}
 }
 
 
 void PingPongServer::run() {
 	this->listen();
 	this->Runnable::start();
-	try {
 	while (this->Runnable::running()) {
 		vector<int> * ready=this->pool->poll();
 		for (unsigned int i=0; i<ready->size(); i++ ) {
 			if (ready->at(i)==this->socketfd) {
 				this->accept();
 			} else {
-				ssize_t count;
+				ssize_t nbb;
                 char buf[512];
-                count = read (ready->at(i),  buf, sizeof buf);
-                if (count<=0) {
+                nbb = read (ready->at(i),  buf, sizeof buf);
+                if (nbb<=0) {
                 	::close(ready->at(i));
                 } else {
                 	int newfd=this->pool->next(ready->at(i));
                 	Log::logger->log("CNXTCP",DEBUG) << "Next socket: " << newfd <<endl;
-                	int ws=write(newfd, buf, count);
+                	int ws=write(newfd, buf, nbb);
                 	if (ws<0) {
                 		Log::logger->log("CNXTCP",ERROR) << "Can't write on socket: " << newfd <<endl;
                 	}
                 }
 			}
 		}
-	}
-	} catch(ConnectionPoolException &e) {
-		Log::logger->log("CNXTCP", ERROR) << "A connection pool error occurs " <<endl;
 	}
 
 }

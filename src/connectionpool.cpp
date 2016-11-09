@@ -1,5 +1,6 @@
 #include "connectionpool.h"
 #include "log.h"
+#include <string.h>
 
 #define MAXEVENTS 64
 
@@ -25,10 +26,7 @@ void ConnectionPool::add(int socket) throw (ConnectionPoolException){
   	event.events = EPOLLIN | EPOLLET;
   	int s = epoll_ctl (this->pool, EPOLL_CTL_ADD, socket, &event);
   	if (s == -1) {
-  		if (errno==ENOMEM) {
-  			Log::logger->log("ConnectionPool", ERROR) << "No more memories in kernel" <<endl;
-  		}
-  		Log::logger->log("ConnectionPool", ERROR) << "Epoll failed to add socket "<< errno <<endl;
+  		Log::logger->log("ConnectionPool", ERROR) << "Epoll failed to add socket "<< errno << " : " << strerror(errno) <<endl;
   		throw ConnectionPoolException("Epoll ctl failed");
     }
 
