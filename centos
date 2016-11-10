@@ -11,3 +11,19 @@ for i in {2..102} ; do ifconfig ens192:$i 172.16.10.$i up ; done
 ./distributed-client -c 25000 -s 172.16.10.1 -p 666 -f 172.16.10.2 -w 10 --nbfrom 40
 ./epoll-ping-pong -p 666
 cat /proc/sys/fs/epoll/max_user_watches
+yum install iptables-services
+iptables -A INPUT -p tcp -m tcp --dport 666 -j ACCEPT
+
+Premier test avec iptables bloque à 65312 : kernel: nf_conntrack: table full, dropping packet
+sysctl -w net.ipv4.ip_conntrack_max=720000
+sysctl -w net.ipv4.netfilter.nf_conntrack_max=720000
+sysctl -w net.netfilter.nf_conntrack_max=720000
+With Test on (with iptables)
+KiB Mem :  3882456 total,   513668 free,   421768 used,  2947020 buff/cache
+
+With iptables off
+KiB Mem :  3882456 total,   941888 free,   164296 used,  2776272 buff/cache
+
+
+With test off
+KiB Mem :  3882456 total,  3348784 free,   250632 used,   283040 buff/cache
