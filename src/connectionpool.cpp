@@ -1,6 +1,7 @@
 #include "connectionpool.h"
 #include "log.h"
 #include <string.h>
+#include <unistd.h>
 
 #define MAXEVENTS 1024
 
@@ -23,7 +24,7 @@ void ConnectionPool::add(int socket) throw (ConnectionPoolException){
 	//this->safe.unlock();
 	struct epoll_event event;
 	event.data.fd = socket;
-  	event.events = EPOLLIN | EPOLLET;
+  	event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
   	int s = epoll_ctl (this->pool, EPOLL_CTL_ADD, socket, &event);
   	if (s == -1) {
   		Log::logger->log("ConnectionPool", ERROR) << "Epoll failed to add socket "<< errno << " : " << strerror(errno) <<endl;
@@ -52,7 +53,11 @@ vector<int> * ConnectionPool::poll() {
 		if ((this->events[i].events & EPOLLERR) || (this->events[i].events & EPOLLHUP) || (!(this->events[i].events & EPOLLIN))) {
 			Log::logger->log("ConnectionPool", ERROR) << "Epoll poll error "<< this->events[i].events  <<endl;
 		} else { 
-			result->push_back(this->events[i].data.fd);
+			if (this->events[i].events & EPOLLRDHUP) {
+				::close(this->events[i].data.fd);
+			} else {
+				result->push_back(this->events[i].data.fd);
+			}
 		}
 	}
 	return result;
