@@ -1,5 +1,45 @@
 # Single thread server
 
+## Purpose
+
+This simple httpd server, is not really an HTTP compliant server. It's just an example of a simple single threaded server using [epoll](http://man7.org/linux/man-pages/man7/epoll.7.html) to manage a lot of simultaneous connections. We use the same pattern than our [epoll-server](epoll-server.md) that allow us to manage more than **1 000 000** simultaneous connections.
+
+For *epoll-server* we just keep connections open and play ping-pong with clients. 
+
+Here we read the *HTTP* request until we have a ```\r\n\r\n``` and then we send a small *HTTP* answer and close the connection.
+
+So the idea is just to saw how many request we can manage with this pattern.
+
+## Build
+
+### On Linux host
+
+```
+git clone https://github.com/marc-despland/epoll-ping-pong.git
+cd epoll-ping-pong
+make httpd
+```
+
+### On a Docker container
+
+First you have to build an image on your host to build C++ project
+```
+docker build -t tools/gcc https://github.com/marc-despland/epoll-ping-pong.git#master:/dist/gcc-g++
+```
+
+Then you can run create a container  with this image. Assuming you have execute the **git clone** in the folder /projects of your host :
+```
+docker run -it --rm --name epollproject -v /projects/epoll-ping-pong:/project:Z tools/gcc
+root@9ea1c69882cf:/project# make httpd
+```
+
+And you will be able to run it in this container. If you want to know which is the IP of this container from your host, simply run :
+
+```
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' epollproject
+```
+
+
 
 ## Run a load test using **[ab](https://httpd.apache.org/docs/2.4/en/programs/ab.html)**
 
