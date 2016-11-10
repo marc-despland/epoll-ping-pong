@@ -5,7 +5,7 @@ CPPFLAGS       = -g -Wall -Iinclude  -std=c++11
 OLDFLAGS	= -std=c++11
 CFLAGS       = $(CPPFLAGS) 
 LDLIBS		 = -lutil -pthread
-TARGET  = epoll-ping-pong epoll-client distributed-client
+TARGET  = epoll-ping-pong epoll-client distributed-client httpd
 SOURCES = $(shell echo src/*.cpp)
 HEADERS = $(shell echo include/*.h)
 OBJECTS = $(SOURCES:.cpp=.o)

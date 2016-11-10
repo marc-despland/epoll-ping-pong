@@ -2,7 +2,7 @@
 #include "log.h"
 #include <string.h>
 
-#define MAXEVENTS 64
+#define MAXEVENTS 1024
 
 
 
@@ -42,11 +42,15 @@ int ConnectionPool::next(int socket) {
 	return result;
 }
 vector<int> * ConnectionPool::poll() {
+	Log::logger->log("CNXTCP Pool", DEBUG) << "start poll" <<endl;
+	free(this->events);
+	this->events = (struct epoll_event *) calloc (MAXEVENTS, sizeof(struct epoll_event));
 	int n = epoll_wait (this->pool, this->events, MAXEVENTS, -1);
+	Log::logger->log("CNXTCP Pool", DEBUG) << "Polling result : "<<n << " sockets" <<endl;
 	vector<int> * result=new vector<int>();
 	for (int i = 0; i < n; i++) {
 		if ((this->events[i].events & EPOLLERR) || (this->events[i].events & EPOLLHUP) || (!(this->events[i].events & EPOLLIN))) {
-			//error
+			Log::logger->log("ConnectionPool", ERROR) << "Epoll poll error "<< this->events[i].events  <<endl;
 		} else { 
 			result->push_back(this->events[i].data.fd);
 		}

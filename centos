@@ -24,6 +24,5 @@ KiB Mem :  3882456 total,   513668 free,   421768 used,  2947020 buff/cache
 With iptables off
 KiB Mem :  3882456 total,   941888 free,   164296 used,  2776272 buff/cache
 
-
 With test off
 KiB Mem :  3882456 total,  3348784 free,   250632 used,   283040 buff/cache
