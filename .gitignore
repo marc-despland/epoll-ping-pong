@@ -2,5 +2,8 @@
 core.*
 epoll-ping-pong
 epoll-client
+simple-http-client
 distributed-client
 httpd
+keepalive-clients
+

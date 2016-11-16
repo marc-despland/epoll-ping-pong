@@ -91,7 +91,7 @@ void PingPongServer::accept() throw(MakeSocketNonBlockingException) {
 				this->count++;
 				Log::logger->log("CNXTCP", NOTICE) << "New Connection " << this->count <<endl;
 			}
-		} while ((clientfd<0) && (errno==EINTR));
+		} while ((clientfd>0) || (errno==EINTR));
 	} catch(ConnectionPoolException &e) {
 		Log::logger->log("CNXTCP", ERROR) << "A connection pool error occurs " <<endl;
 	}

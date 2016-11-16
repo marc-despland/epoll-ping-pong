@@ -106,3 +106,7 @@ void HttpRequest::init() {
 	this->lf1=false;
 	this->lf2=false;
 }
+
+std::string HttpRequest::request(std::string host, unsigned int port, std::string path) {
+	return "GET / HTTP1.1\r\nHost: "+host+":"+std::to_string(port)+"\r\nAccept: */*\r\nConnection: keep-alive\r\n\r\n";
+}

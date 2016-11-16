@@ -3,11 +3,9 @@
 #include <fcntl.h>
 #include <strings.h>
 #include <unistd.h>
+#include "log.h"
 
 #define MAXEVENTS 64
-
-ConnectionManager * ConnectionManager::singleton=new ConnectionManager();
-
 
 ConnectionManager::ConnectionManager() {
 	this->events = (struct epoll_event *) calloc (MAXEVENTS, sizeof(struct epoll_event));
@@ -17,9 +15,7 @@ ConnectionManager::ConnectionManager() {
 	this->actions=new Fifo();
 }
 
-ConnectionManager * ConnectionManager::cm() {
-	return ConnectionManager::singleton;
-}
+
 
 int ConnectionManager::add(int socket) {
 	ConnectionManager::makeSocketNonBlocking(socket);
@@ -50,14 +46,23 @@ int ConnectionManager::makeSocketNonBlocking(int socket) {
     return 1;
 }
 
+
+void ConnectionManager::onStart() {
+
+}
+
 void ConnectionManager::checkEvent() {
+	this->onStart();
 	this->running=true;
 	while (this->running) {
+		Log::logger->log("ConnectionManager",DEBUG) << "Checking events" <<endl;
 		int n = epoll_wait (this->pool, this->events, MAXEVENTS, -1);
+		Log::logger->log("ConnectionManager",DEBUG) << "Have received " <<n << "events"<<endl;
 		for (int i = 0; i < n; i++) {
 			if ((this->events[i].events & EPOLLERR) || (this->events[i].events & EPOLLHUP) || (!(this->events[i].events & EPOLLIN))) {
 			//error
 			} else {
+				Log::logger->log("ConnectionManager",DEBUG) << "Adding events"<<endl;
 				this->actions->add(this->events[i].data.fd);
 			}
 		}
@@ -65,29 +70,54 @@ void ConnectionManager::checkEvent() {
 }
 
 int ConnectionManager::next() {
+	Log::logger->log("ConnectionManager",DEBUG) << "Wait next socket"  <<endl;
 	return this->actions->next();
 }
 
 void ConnectionManager::startWorkers(int count) {
 	for(int i=0; i<count;i++) {
-		std::thread * tmp=new std::thread(ConnectionManager::run);
+		std::thread * tmp=new std::thread(ConnectionManager::run, this);
 		this->workers->push_back(tmp);
 	}
 }
 
-void ConnectionManager::run() {
-	ConnectionManager::cm()->running=true;
-	while (ConnectionManager::cm()->running) {
-		int socketfd=ConnectionManager::cm()->next();
-		ssize_t count;
-        char buf[512];
-        bzero(buf, 512);
-        count = read (socketfd,  buf, sizeof buf);
-        if (count<=0) {
-            ::close(socketfd);
-        } else {
-			::write(socketfd, buf, count);
+void ConnectionManager::run(ConnectionManager * cm) {
+	cm->running=true;
+	while (cm->running) {
+		Log::logger->log("ConnectionManager",DEBUG) << "Running worker"  <<endl;
+		int socketfd=cm->next();
+		if (socketfd>0) {
+			Log::logger->log("ConnectionManager",DEBUG) << "Managing socket " <<socketfd <<endl;
+			int count;
+	        count = cm->read(socketfd);
+	        if (count<=0) {
+	            ::close(socketfd);
+	        } else {
+				cm->write(socketfd);
+			}
 		}
 	}
+	Log::logger->log("ConnectionManager",DEBUG) << "Closing worker"  <<endl;
 
+}
+
+int ConnectionManager::read(int socketfd) {
+	Log::logger->log("ConnectionManager",DEBUG) << "Reading on socket " << socketfd <<endl;
+    char buf[512];
+    bzero(buf, 512);
+    return ::read (socketfd,  buf, sizeof buf);
+}
+
+
+
+int ConnectionManager::write(int socketfd) {
+	Log::logger->log("ConnectionManager",DEBUG) << "Writing on socket " << socketfd <<endl;
+	std:string bip="bip";
+	return ::write(socketfd, bip.c_str(), bip.length());
+}
+
+void ConnectionManager::joinWorkers() {
+	for (int i=0; i<this->workers->size(); i++ ) {
+		this->workers->at(i)->join();
+	}
 }

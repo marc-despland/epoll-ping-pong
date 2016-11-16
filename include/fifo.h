@@ -12,8 +12,10 @@ public:
 	void add(int socket);
 	int next();
 	int size();
+	void unlock();
 
 private:
+	bool unlocked;
 	std::mutex read;
 	std::mutex write;
 	std::condition_variable ready;

@@ -6,17 +6,17 @@
 #include <string>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include "connectionmanager.h"
 
 class ClientGenerator {
 public:
-	static ClientGenerator * generator();
+	ClientGenerator(ConnectionManager * cm);
 	void start(std::string firsthost, int nbhost, int nbcntx, int nbworker, std::string destination, int port);
-
+	void joinWorkers();
 protected:
+	virtual void dosomething(int socketfd);
 	long next();
-	static ClientGenerator * singleton;
-	ClientGenerator();
-	static void run();
+	static void run(ClientGenerator * generator);
 	long currenthost;
 	int  remaininghost;
 	int remainingcntx;
@@ -25,5 +25,6 @@ protected:
 	std::vector<std::thread *> * workers;
 	std::mutex read;
 	struct sockaddr_in destination;
+	ConnectionManager * cm;
 };
 #endif

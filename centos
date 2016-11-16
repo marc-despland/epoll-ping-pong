@@ -5,7 +5,9 @@ git clone https://github.com/marc-despland/epoll-ping-pong.git
 cd epoll-ping-pong/
 
 for i in {2..102} ; do ifconfig ens192:$i 172.16.10.$i up ; done
+for i in {1..40} ; do ifconfig enp6s0f0:$i 172.16.10.$i up ; done
 
+service firewalld stop
 
  ulimit -n 1000000
 ./distributed-client -c 25000 -s 172.16.10.1 -p 666 -f 172.16.10.2 -w 10 --nbfrom 40
@@ -26,3 +28,7 @@ KiB Mem :  3882456 total,   941888 free,   164296 used,  2776272 buff/cache
 
 With test off
 KiB Mem :  3882456 total,  3348784 free,   250632 used,   283040 buff/cache
+
+*******************************************************************************************
+We have sent 10000020 requests in 2600 seconds
+[root@localhost epoll-ping-pong]# ./keepalive-clients -c 20000 -f 172.16.10.1 -m 10000 -n 20 -w 20 -s 172.17.0.20 -p 80  -d

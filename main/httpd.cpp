@@ -11,12 +11,15 @@ int main(int argc, char **argv) {
 	try {
 		options.add('d', "debug", "Start on debug mode", false, false);
 		options.add('p', "port", "Port to listen to", true, true);
+		options.add('w', "wait", "wait before closing", false, false);
+		options.add('k', "keep-alive", "Keep socket alive", false, false);
 	} catch(ExistingOptionException &e ) {
 	}
 	try {
 		options.parse(argc, argv);
 		if (options.get('d')->isAssign()) Log::logger->setLevel(DEBUG);
-		HttpServer * server=new HttpServer(options.get("port")->asInt(),20);
+		HttpServer * server=new HttpServer(options.get("port")->asInt(),20, options.get('k')->isAssign());
+		if (options.get('w')->isAssign()) server->waitBeforeClosing();
 		server->run();
 		
 	} catch (OptionsStopException &e) {

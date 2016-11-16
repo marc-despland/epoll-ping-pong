@@ -64,14 +64,16 @@ class CantConnectException: public exception {
 class HttpServer:Runnable {
 
 public:
-	HttpServer(int port, unsigned int size);
+	HttpServer(int port, unsigned int size, bool keepalive);
 	void listen() throw (ConnectionListenException);
 	void accept() throw (MakeSocketNonBlockingException);
 	void run();
+	void waitBeforeClosing();
 
 protected:
+	bool	keepalive;
 	static void makeSocketNonBlocking(int socket) throw(MakeSocketNonBlockingException);
-
+	bool wait;
 	int socketfd;
 	int port;
 	unsigned int size;	

@@ -2,8 +2,8 @@
 #include "options.h"
 #include "log.h"
 #include "fifo.h"
-#include "connectionmanager.h"
-#include "clientgenerator.h"
+#include "connectionmanagerhttp.h"
+#include "clientgeneratorhttp.h"
 
 
 int main(int argc, char **argv) {
@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
 		options.add('c', "count", "Number of connection to create", true, true);
 		options.add('w', "workers", "Number of workers to create", true, true);
 		options.add('f', "from", "The source IP to use", true, false);
+		options.add('m', "max", "Number of kilo requests to send", true, true);
 		options.add('n', "nbfrom", "The number of client (first start with 'from' ip... and increase)", true, false);
 		} catch(ExistingOptionException &e ) {
 	}
@@ -28,13 +29,20 @@ int main(int argc, char **argv) {
 			from=options.get("from")->asChars();
 		}
 		if (options.get("nbfrom")->isAssign()) nbfrom=options.get("nbfrom")->asInt();
-		ConnectionManager * cm=new ConnectionManager();
-		ClientGenerator * generator=new ClientGenerator(cm);
+		ConnectionManagerHttp * cm=new ConnectionManagerHttp( options.get("host")->asChars(),options.get("port")->asInt(),options.get("max")->asInt()*(long) 1000);
+		ClientGeneratorHttp * generator=new ClientGeneratorHttp(cm);
 		generator->start(from, nbfrom, options.get("count")->asInt(),options.get("workers")->asInt(), options.get("host")->asChars(),options.get("port")->asInt());
-		
+		Log::logger->log("KeepAlive",NOTICE) << "Waiting the end of client generation" <<endl;
+		generator->joinWorkers();
+		Log::logger->log("KeepAlive",NOTICE) << "End of client Generation" <<endl<<endl;
 		cm->startWorkers(options.get("workers")->asInt());
+		Log::logger->log("KeepAlive",NOTICE) << "Staring Event loops" <<endl;
 		cm->checkEvent();
-
+		
+		//generator->joinWorkers();
+		Log::logger->log("KeepAlive",NOTICE) << "Waiting the end of the workers" <<endl;
+		cm->joinWorkers();
+		cm->showStats();
 
 	} catch (OptionsStopException &e) {
 	} catch (UnknownOptionException &e) {

@@ -5,7 +5,7 @@ CPPFLAGS       = -g -Wall -Iinclude  -std=c++11
 OLDFLAGS	= -std=c++11
 CFLAGS       = $(CPPFLAGS) 
 LDLIBS		 = -lutil -pthread
-TARGET  = epoll-ping-pong epoll-client distributed-client httpd
+TARGET  = epoll-ping-pong epoll-client distributed-client httpd simple-http-client keepalive-clients
 SOURCES = $(shell echo src/*.cpp)
 HEADERS = $(shell echo include/*.h)
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -20,6 +20,11 @@ build:
 	- docker build -t epoll/server dist/server
 	- cp epoll-client dist/client
 	- docker build -t epoll/client dist/client
+	- cp simple-http-client dist/simple-client
+	- docker build -t epoll/simple-client dist/simple-client
+	- cp httpd dist/httpd
+	- docker build -t epoll/httpd dist/httpd
+
 
 clean:
 	-echo "clean"

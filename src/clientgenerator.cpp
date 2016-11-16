@@ -12,15 +12,14 @@
 
 
 
-ClientGenerator * ClientGenerator::singleton=new ClientGenerator();
-
-ClientGenerator::ClientGenerator() {
+ClientGenerator::ClientGenerator(ConnectionManager * cm) {
 	this->currenthost=0;
 	this->remaininghost=0;
 	this->remainingcntx=0;
 	this->maxcntx=0;
 	this->nbworker=0;
 	this->workers=new std::vector<std::thread *>();
+	this->cm=cm;
 }
 
 void ClientGenerator::start(std::string firsthost, int nbhost, int nbcntx, int nbworker, std::string destination, int port) {
@@ -45,21 +44,21 @@ void ClientGenerator::start(std::string firsthost, int nbhost, int nbcntx, int n
 
 
 	for(int i=0; i<this->nbworker;i++) {
-		std::thread * tmp=new std::thread(ClientGenerator::run);
+		std::thread * tmp=new std::thread(ClientGenerator::run, this);
 		this->workers->push_back(tmp);
 	}
 
 }
 
+void ClientGenerator::dosomething(int socketfd) {
 
-ClientGenerator * ClientGenerator::generator() {
-	return ClientGenerator::singleton;
 }
 
-void ClientGenerator::run() {
+
+void ClientGenerator::run(ClientGenerator * generator) {
 	bool go=true;
 	while (go) {
-		long host=ClientGenerator::generator()->next();
+		long host=generator->next();
 		if (host<0) {
 			go=false;
 		} else {
@@ -73,9 +72,10 @@ void ClientGenerator::run() {
 					source.sin_family = AF_INET;
 					::bind(socketfd, (struct sockaddr *)&(source), sizeof(struct sockaddr_in));
 				}
-				if (::connect( socketfd,(struct sockaddr *)&(ClientGenerator::generator()->destination), sizeof(struct sockaddr_in)) >= 0 ) {
-					Log::logger->log("ClientGenerator",DEBUG) << "Create Socket: " << socketfd << " thread id "<<  std::this_thread::get_id() <<endl;
-					ConnectionManager::cm()->add(socketfd);
+				if (::connect( socketfd,(struct sockaddr *)&(generator->destination), sizeof(struct sockaddr_in)) >= 0 ) {
+					Log::logger->log("ClientGenerator",NOTICE) << "Create Socket: " << socketfd << " thread id "<<  std::this_thread::get_id() <<endl;
+					generator->cm->add(socketfd);
+					generator->dosomething(socketfd);
 					::usleep(10000);
 				}
 			}
@@ -98,4 +98,11 @@ long ClientGenerator::next() {
 	}
 	this->read.unlock();
 	return this->currenthost;
+}
+
+
+void ClientGenerator::joinWorkers() {
+	for (int i=0; i<this->workers->size(); i++ ) {
+		this->workers->at(i)->join();
+	}
 }

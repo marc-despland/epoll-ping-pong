@@ -13,12 +13,18 @@
 
 
 
-HttpServer::HttpServer(int port, unsigned int size):Runnable() {
+HttpServer::HttpServer(int port, unsigned int size, bool keepalive):Runnable() {
 	this->port=port;
 	this->size=size;
 	this->count=0;
+	this->wait=false;
+	this->keepalive=keepalive;
 }
 
+
+void HttpServer::waitBeforeClosing() {
+	this->wait=true;
+}
 
 void HttpServer::makeSocketNonBlocking(int socket) throw(MakeSocketNonBlockingException){
 	int flags, s;
@@ -86,7 +92,7 @@ void HttpServer::accept() throw(MakeSocketNonBlockingException) {
 				Log::logger->log("CNXTCP",DEBUG) << "Accept socket: " << clientfd << " error : " << errno << " " << strerror(errno) <<endl;
 			}
 			Log::logger->log("CNXTCP",DEBUG) << "ACCEPT LOOP END " << clientfd << " " << errno<<endl;
-		} while (clientfd>0) ;
+		} while ((clientfd>0) || (errno==EINTR)) ;
 		//((clientfd<0) && ((errno==EINTR) || (errno!=EAGAIN)));
 	} catch(ConnectionPoolException &e) {
 		Log::logger->log("CNXTCP", ERROR) << "A connection pool error occurs " <<endl;
@@ -130,14 +136,22 @@ void HttpServer::run() {
 	  						timeinfo = localtime (&rawtime);
 	  						strftime (buffer,80,"Date: %a, %d %b %Y %X %Z",timeinfo);
 	  						std::string response= "HTTP/1.1 200 OK\r\n"+ string(buffer) +"\r\nServer: fast\r\nContent-Type: application/json\r\nConnection: close\r\nContent-Length: 13\r\n\r\n{ 'event':0 }";
+	  						if (this->keepalive) {
+	  							response= "HTTP/1.1 200 OK\r\n"+ string(buffer) +"\r\nServer: fast\r\nContent-Type: application/json\r\nConnection: keep-alive\r\nContent-Length: 13\r\n\r\n{ 'event':0 }";
+	  						}
 	  						int ws=write(ready->at(i), response.c_str(), response.length());
 	                		if (ws<0) {
 	                			Log::logger->log("CNXTCP",ERROR) << "Can't write on socket: " << ready->at(i) <<endl;
 	                		}
 	                		if (ws != response.length()) Log::logger->log("CNXTCP",ERROR) << "We still have to write data " << ready->at(i) <<endl;
 	                		//::shutdown(ready->at(i), SHUT_RD);
-	                		::close(ready->at(i));
-	                		this->requests[ready->at(i)].init();
+	                		
+	                		if (this->wait) sleep(2);
+	                		if (!this->keepalive) {
+	                			Log::logger->log("CNXTCP",DEBUG) << "Closing socket "<<  ready->at(i) <<endl;
+	                			::close(ready->at(i));
+	                			this->requests[ready->at(i)].init();
+	                		}
 	                	}	
 	                }
 	                Log::logger->log("CNXTCP",DEBUG) << "Read loop "<< readerror<<endl;
