@@ -17,9 +17,8 @@ ConnectionManagerHttp::ConnectionManagerHttp(std::string host, int port, long ma
 }
 
 int ConnectionManagerHttp::add(int socket) {
-	this->stoper.lock();
+	std::unique_lock<std::mutex> lck(this->stoper);
 	this->sockets.push_back(socket);
-	this->stoper.unlock();
 	return ConnectionManager::add(socket);
 }
 
@@ -34,7 +33,11 @@ int ConnectionManagerHttp::read(int socketfd) {
     	if (n>0) count+=n;
     } while (n>0);
     Log::logger->log("ConnectionManagerHttp",DEBUG) << "Have read "<<count<< " bytes for socket " << socketfd << " Error : " << strerror(errno)<<endl;
-    return count;
+    if ((count==0) && (errno!=EAGAIN)) {
+    	return -1;
+    } else {
+    	return count;
+    }
 }
 
 

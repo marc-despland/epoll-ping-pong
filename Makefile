@@ -15,15 +15,22 @@ DEBUGFLAGS = -g
  
 all: $(TARGET)
 
-build:
+dist: 
 	- cp epoll-ping-pong dist/server
-	- docker build -t epoll/server dist/server
 	- cp epoll-client dist/client
-	- docker build -t epoll/client dist/client
 	- cp simple-http-client dist/simple-client
-	- docker build -t epoll/simple-client dist/simple-client
 	- cp httpd dist/httpd
+	- cp keepalive-clients dist/keepalive-clients
+
+docker: dist
+	- docker build -t epoll/server dist/server
+	- docker build -t epoll/client dist/client
+	- docker build -t epoll/simple-client dist/simple-client
 	- docker build -t epoll/httpd dist/httpd
+	- docker build -t epoll/keepalive-clients dist/keepalive-clients
+	- docker build -t epoll/keepalive-clients dist/keepalive-clients
+	- docker build -t epoll/apache dist/apache
+	- docker build -t epoll/nginx dist/nginx
 
 
 clean:

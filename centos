@@ -32,3 +32,38 @@ KiB Mem :  3882456 total,  3348784 free,   250632 used,   283040 buff/cache
 *******************************************************************************************
 We have sent 10000020 requests in 2600 seconds
 [root@localhost epoll-ping-pong]# ./keepalive-clients -c 20000 -f 172.16.10.1 -m 10000 -n 20 -w 20 -s 172.17.0.20 -p 80  -d
+
+
+Avec Apache2
+*******************************************************************************************
+We have sent 10000020 requests in 2309 seconds
+
+Total accesses: 8352101 - Total Traffic: 2.9 GB
+CPU Usage: u574.68 s1218.64 cu0 cs0 - 87.1% CPU load
+4050 requests/sec - 1.5 MB/second - 376 B/request
+1 requests currently being processed, 2047 idle workers
+
+PID	Connections 	Threads	Async connections
+total	accepting	busy	idle	writing	keep-alive	closing
+6	169039	yes	0	1024	0	169038	0
+7	170795	yes	1	1023	0	170795	0
+Sum	339834	 	1	2047	0	339833	0
+
+
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free  inact active   si   so    bi    bo   in   cs us sy id wa st
+ 2  0      0 57451972 1100456 4834532    0    0    18    51  139   35  4  9 86  1  0
+ 1  0      0 58392884 1100404 4149748    0    0     0     0 2132 1849  2 12 87  0  0
+
+
+
+
+Avec NGINX
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free  inact active   si   so    bi    bo   in   cs us sy id wa st
+ 3  0      0 57941644 1044940 2527896    0    0     0    96 31071 567939  8 23 69  0  0
+
+*******************************************************************************************
+We have sent 10000001 requests in 347 seconds
+
+

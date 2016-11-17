@@ -4,6 +4,8 @@
 #include <strings.h>
 #include <unistd.h>
 #include "log.h"
+#include <errno.h>
+#include <string.h>
 
 #define MAXEVENTS 64
 
@@ -60,7 +62,7 @@ void ConnectionManager::checkEvent() {
 		Log::logger->log("ConnectionManager",DEBUG) << "Have received " <<n << "events"<<endl;
 		for (int i = 0; i < n; i++) {
 			if ((this->events[i].events & EPOLLERR) || (this->events[i].events & EPOLLHUP) || (!(this->events[i].events & EPOLLIN))) {
-			//error
+				Log::logger->log("ConnectionManager",ERROR) << "****************************************** CheckEvent ERROR on socket "<< this->events[i].data.fd <<endl;
 			} else {
 				Log::logger->log("ConnectionManager",DEBUG) << "Adding events"<<endl;
 				this->actions->add(this->events[i].data.fd);
@@ -90,14 +92,18 @@ void ConnectionManager::run(ConnectionManager * cm) {
 			Log::logger->log("ConnectionManager",DEBUG) << "Managing socket " <<socketfd <<endl;
 			int count;
 	        count = cm->read(socketfd);
-	        if (count<=0) {
+	        if (count<0) {
+	        	Log::logger->log("ConnectionManager",ERROR) << "*************************************************** An Error occurs reading socket => close "<<count<< " Error: "<< errno<< " " <<strerror(errno)<<endl;
 	            ::close(socketfd);
 	        } else {
-				cm->write(socketfd);
+				int nbw=cm->write(socketfd);
+				if (nbw<=0) {
+					Log::logger->log("ConnectionManager",ERROR) << "*************************************************** An Error occurs writing socket => close "<<nbw<< " Error: "<< errno<< " " <<strerror(errno)<<endl;
+				}
 			}
 		}
 	}
-	Log::logger->log("ConnectionManager",DEBUG) << "Closing worker"  <<endl;
+	Log::logger->log("ConnectionManager",NOTICE) << "Closing worker"  <<endl;
 
 }
 
