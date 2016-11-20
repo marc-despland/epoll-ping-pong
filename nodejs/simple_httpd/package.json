@@ -1,0 +1,17 @@
+{
+  "name": "httpd",
+  "preferGlobal": true,
+  "version": "0.0.1",
+  "author": "Marc Despland <marc.despland@art-122-5.net>",
+  "description": "HTTPD server test",
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "scripts": {
+    "start": "node ./app.js"
+  },
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}
